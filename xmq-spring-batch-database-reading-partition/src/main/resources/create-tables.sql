@@ -1,0 +1,9 @@
+--   表 test.product 结构
+CREATE TABLE `product` (
+	`id` INT(11) NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(250) NULL DEFAULT NULL,
+	`category` VARCHAR(250) NULL DEFAULT NULL,
+	PRIMARY KEY (`id`)
+)
+ENGINE=InnoDB
+;
