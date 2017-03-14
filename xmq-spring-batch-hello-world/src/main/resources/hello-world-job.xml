@@ -10,14 +10,23 @@
 	<!-- use the batch namespace and Ctrl + T for code completion (tag + class)! -->
 	
 	
-    <bean id="helloWorldTasklet" class="com.xmq.HelloWorldTasklet" scope="step">
+ <!--    <bean id="helloWorldTasklet" class="com.xmq.HelloWorldTasklet" scope="step">
     </bean>
 	
     <job id="helloWorldJob"  xmlns="http://www.springframework.org/schema/batch">
         <step id="step1">
               <tasklet ref="helloWorldTasklet" />
         </step>
-    </job>
+    </job> -->
+    
+    <batch:job id="helloWorldJob">
+		<batch:step id="helloWorldStep">
+			<batch:tasklet>
+				<bean class="com.xmq.HelloWorldTasklet" />
+			</batch:tasklet>
+		</batch:step>
+	</batch:job>
+    
 
 	<!-- /// Spring Batch infrastructure /// -->
 	<bean id="transactionManager" class="org.springframework.batch.support.transaction.ResourcelessTransactionManager" />

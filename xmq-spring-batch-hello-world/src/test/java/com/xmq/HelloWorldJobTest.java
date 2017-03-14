@@ -3,11 +3,14 @@
  */
 package com.xmq;
 
+import static org.junit.Assert.*;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
@@ -39,8 +42,9 @@ public class HelloWorldJobTest {
 		// TODO 06 check the returned JobExecution
 		// it should have an ExitStatus.COMPLETED exit status
 		// TODO 07 run the test!
-		JobExecution result = jobLauncher.run(job, new JobParameters());
-		logger.debug("result===>>>>>>>>>>>"+ result);
+		JobExecution execution = jobLauncher.run(job, new JobParameters());
+		assertEquals(ExitStatus.COMPLETED, execution.getExitStatus());
+		logger.debug("result===>>>>>>>>>>>"+ execution);
 	}
 	
 }

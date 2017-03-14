@@ -10,7 +10,6 @@
   <groupId>com.xmq</groupId>
   <artifactId>xmq-spring-batch-hello-world</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <packaging>war</packaging>
   <name>xmq-spring-batch-hello-world Maven Webapp</name>
   <url>http://maven.apache.org</url>
   <dependencies>
