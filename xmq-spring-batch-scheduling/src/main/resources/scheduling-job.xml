@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:batch="http://www.springframework.org/schema/batch"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch-2.2.xsd">
+		
+	<!-- TODO 02 declare a bean for the launcher -->
+	<bean id="importLauncher" class="com.xmq.ImportLauncher" />
+	
+	<!-- TODO 03 schedule the import to run every second -->
+	
+	<task:scheduled-tasks>
+		<task:scheduled ref="importLauncher" method="launch" fixed-delay="1000" />
+	</task:scheduled-tasks>
+	
+	
+	<!-- the JobExplorer provides methods to query the batch execution metadata -->
+	<bean class="org.springframework.batch.core.explore.support.JobExplorerFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<batch:job id="schedulingJob">
+		<batch:step id="schedulingStep">
+			<batch:tasklet>
+				<batch:chunk reader="reader" writer="writer" commit-interval="4"/>
+			</batch:tasklet>
+		</batch:step>
+	</batch:job>
+	
+	<bean id="reader" class="org.springframework.batch.item.file.FlatFileItemReader">
+		<property name="lineMapper">
+			<bean class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+				<property name="lineTokenizer">
+					<bean class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+						<property name="names" value="firstname,lastname,birth" />
+					</bean>
+				</property>
+				<property name="fieldSetMapper">
+					<bean class="com.xmq.ContactFieldSetMapper" />
+				</property>
+			</bean>
+		</property>
+		<property name="resource" value="classpath:contacts.txt" />
+	</bean>
+	
+	<bean id="writer" class="com.xmq.JdbcContactItemWriter">
+		<constructor-arg ref="dataSource" />
+	</bean>
+
+	 <bean id="propertyConfigure"  class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"> 
+ 	 	<property name="locations"> 
+		   <list> 
+		    <value>./jdbc.properties</value> 
+		   </list> 
+  		</property> 
+ 	</bean>
+ 	
+ 	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"  init-method="init" destroy-method="close"> 
+		  <property name="driverClassName" value="${jdbc.driverClassName}" /> 
+		  <property name="url" value="${jdbc.url}" /> 
+		  <property name="username" value="${jdbc.username}" /> 
+		  <property name="password" value="${jdbc.password}" /> 
+		  <!-- 配置初始化大小、最小、最大 --> 
+		  <property name="initialSize" value="1" /> 
+		  <property name="minIdle" value="1" /> 
+		  <property name="maxActive" value="10" />
+		
+		  <!-- 配置获取连接等待超时的时间 --> 
+		  <property name="maxWait" value="10000" />
+		
+		  <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 --> 
+		  <property name="timeBetweenEvictionRunsMillis" value="60000" />
+		
+		  <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 --> 
+		  <property name="minEvictableIdleTimeMillis" value="300000" />
+		
+		  <property name="testWhileIdle" value="true" />
+		
+		  <!-- 这里建议配置为TRUE，防止取到的连接不可用 --> 
+		  <property name="testOnBorrow" value="true" /> 
+		  <property name="testOnReturn" value="false" />
+		
+		  <!-- 打开PSCache，并且指定每个连接上PSCache的大小 --> 
+		  <property name="poolPreparedStatements" value="true" /> 
+		  <property name="maxPoolPreparedStatementPerConnectionSize" 
+		   value="20" />
+		
+		  <!-- 这里配置提交方式，默认就是TRUE，可以不用配置 -->
+		
+		  <property name="defaultAutoCommit" value="true" />
+
+		  <!-- 验证连接有效与否的SQL，不同的数据配置不同 --> 
+		  <property name="validationQuery" value="select 1 " /> 
+		  <property name="filters" value="stat" /> 
+		  <property name="proxyFilters"> 
+			   <list> 
+			    <ref bean="logFilter" /> 
+			   </list> 
+  		  </property> 
+	 </bean>
+
+	 <bean id="logFilter" class="com.alibaba.druid.filter.logging.Slf4jLogFilter"> 
+	  		<property name="statementExecutableSqlLogEnable" value="false" /> 
+	 </bean>
+	 
+	  <!-- create job-meta tables automatically -->
+	  <jdbc:initialize-database data-source="dataSource">
+		<jdbc:script location="org/springframework/batch/core/schema-drop-mysql.sql" />
+		<jdbc:script location="org/springframework/batch/core/schema-mysql.sql" />
+	  </jdbc:initialize-database>
+
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<batch:job-repository id="jobRepository" />
+
+	<bean id="jobLauncher" class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
+		<property name="jobRepository" ref="jobRepository" />
+	</bean>
+	
+	<bean class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+</beans>
