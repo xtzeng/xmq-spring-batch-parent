@@ -131,13 +131,12 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>${junit.version}</version>
-			<scope>test</scope>
 		</dependency>
   </dependencies>
   
     <properties>
 		<spring.batch.version>3.0.4.RELEASE</spring.batch.version>
-		<spring.version>4.1.7.RELEASE</spring.version>
+		<spring.version>4.2.0.RELEASE</spring.version>
 		<spring.batch.integration.version>3.0.4.RELEASE</spring.batch.integration.version>
 		<spring.integration.version>2.0.4.RELEASE</spring.integration.version>
 		<slf4j.version>1.7.5</slf4j.version>
@@ -174,5 +173,6 @@
 	</repositories>
   <modules>
     <module>xmq-spring-batch-quick-start</module>
+    <module>xmq-spring-batch-hello-world</module>
   </modules>
 </project>
