@@ -8,13 +8,13 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <groupId>com.xmq</groupId>
-  <artifactId>xmq-spring-batch-flat-file-reading</artifactId>
+  <artifactId>xmq-spring-batch-jdbc-paging</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>xmq-spring-batch-flat-file-reading Maven Webapp</name>
+  <name>xmq-spring-batch-jdbc-paging Maven Webapp</name>
   <url>http://maven.apache.org</url>
-  <dependencies>
   
-		<dependency>
+  <dependencies>
+  		<dependency>
 		    <groupId>com.alibaba</groupId>
 		    <artifactId>druid</artifactId>
 		    <version>1.0.18</version>
@@ -25,10 +25,8 @@
 	    <artifactId>mysql-connector-java</artifactId>
 	    <version>5.1.38</version>
 	</dependency>
-		
-  	
   </dependencies>
   <build>
-    <finalName>xmq-spring-batch-flat-file-reading</finalName>
+    <finalName>xmq-spring-batch-jdbc-paging</finalName>
   </build>
 </project>

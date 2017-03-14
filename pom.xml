@@ -174,5 +174,11 @@
   <modules>
     <module>xmq-spring-batch-quick-start</module>
     <module>xmq-spring-batch-hello-world</module>
+    <module>xmq-spring-batch-chunk-processing</module>
+    <module>xmq-spring-batch-flat-file-reading</module>
+    <module>xmq-spring-batch-skip</module>
+    <module>xmq-spring-batch-database-reading-partition</module>
+    <module>xmq-spring-batch-scheduling</module>
+    <module>xmq-spring-batch-jdbc-paging</module>
   </modules>
 </project>
