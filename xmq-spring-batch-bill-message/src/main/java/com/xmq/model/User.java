@@ -1,17 +1,3 @@
-/***********************************************************************
- *
- * û������
- *
- * batch_sample 1.0Դ���뿽��Ȩ�������Ĵ�ʱ������������޹�˾���У�
- * �ܵ����ɵı������κι�˾����ˣ�δ����Ȩ�������Կ�����
- *
- * @copyright   Copyright: 2002-2006 Beijing Startimes
- *              Software Technology Co. Ltd.
- * @creator     liugr liugr@startimes.com.cn <br/>
- * @create-time ����12:21:50
- * @revision    $Id$
- *
- ***********************************************************************/
 package com.xmq.model;
 
 public class User {

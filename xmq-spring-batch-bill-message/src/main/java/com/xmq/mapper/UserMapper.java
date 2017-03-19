@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.xmq.mapper;
 
 import org.springframework.batch.item.file.mapping.FieldSetMapper;

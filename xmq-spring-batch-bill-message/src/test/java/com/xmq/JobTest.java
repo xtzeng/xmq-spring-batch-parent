@@ -48,7 +48,7 @@ public class JobTest {
 			
 		try {
 			Map<String, JobParameter> parameters = new HashMap<String, JobParameter>();
-			parameters.put(RUN_DAY_KEY, new JobParameter("2017-03-19"));
+			parameters.put(RUN_DAY_KEY, new JobParameter("2017-03-12"));
 			JobExecution je = launcher.run((Job) c.getBean("billingJob"),
 					new JobParameters(parameters));
 			System.out.println(je);

@@ -1,16 +1,9 @@
-/**
- * 
- */
 package com.xmq.listener;
 
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.listener.StepExecutionListenerSupport;
 
-/**
- * @author kunrey
- * 
- */
 public class PayStepCheckingListener extends StepExecutionListenerSupport {
 
 	@Override

@@ -11,10 +11,11 @@
 	
 	
 	 <!-- create job-meta tables automatically -->
-	<!--   <jdbc:initialize-database data-source="dataSource">
+	<!--  --> <jdbc:initialize-database data-source="dataSource">
 		<jdbc:script location="org/springframework/batch/core/schema-drop-mysql.sql" />
 		<jdbc:script location="org/springframework/batch/core/schema-mysql.sql" />
-	  </jdbc:initialize-database> -->
+		<jdbc:script location="init_db_mysql.sql" />
+	  </jdbc:initialize-database> 
 	
 	
 	<job id="billingJob" restartable="true">
@@ -22,7 +23,7 @@
 		<step id="billingStep" next="payStep">
 			<tasklet>
 				<chunk reader="userDbReader" processor="billingProcessor"
-					writer="billDbWriter" commit-interval="5" chunk-completion-policy="">
+					writer="billDbWriter" commit-interval="1" chunk-completion-policy="">
 				</chunk>
 			</tasklet>
 		</step>
@@ -30,10 +31,10 @@
 		<step id="payStep">
 			<tasklet>
 				<chunk reader="billDbReader" processor="payProcessor" writer="payDbWriter"
-					commit-interval="5" chunk-completion-policy="" skip-limit="100">
+					commit-interval="1" chunk-completion-policy="" skip-limit="100">
+					      <!--  include是允许跳过的错，exclude是不允许跳过的错。-->
 					<skippable-exception-classes>
-						<include
-							class="com.xmq.exception.MoneyNotEnoughException" />
+						<include class="com.xmq.exception.MoneyNotEnoughException" />
 					</skippable-exception-classes>
 				</chunk>
 			</tasklet>
@@ -46,7 +47,7 @@
 		<step id="messageStep">
 			<tasklet>
 				<chunk reader="billArrearsDbReader" processor="messageProcessor"
-					writer="messageDbWriter" commit-interval="5"
+					writer="messageDbWriter" commit-interval="1"
 					chunk-completion-policy="">
 				</chunk>
 			</tasklet>

@@ -1,13 +1,6 @@
-/**
- * 
- */
 package com.xmq.model;
 
 
-/**
- * @author kunrey
- * 
- */
 public class Bill {
 	private Long id;
 	private User user;

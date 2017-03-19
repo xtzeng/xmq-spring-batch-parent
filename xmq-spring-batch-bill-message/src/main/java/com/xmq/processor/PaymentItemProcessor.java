@@ -9,9 +9,11 @@ import com.xmq.model.PayRecord;
 public class PaymentItemProcessor implements ItemProcessor<Bill, PayRecord> {
 
 	public PayRecord process(Bill item) throws Exception {
+		
 		if (item.getUser().getBalance() <= 0) {
 			return null;
 		}
+		
 		if (item.getUser().getBalance() >= item.getUnpaidFees()) {
 			// create payrecord
 			PayRecord pr = new PayRecord();

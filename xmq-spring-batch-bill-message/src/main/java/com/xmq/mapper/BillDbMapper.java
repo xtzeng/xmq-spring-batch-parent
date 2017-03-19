@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.xmq.mapper;
 
 import java.sql.ResultSet;
@@ -11,10 +8,6 @@ import org.springframework.jdbc.core.RowMapper;
 import com.xmq.model.Bill;
 import com.xmq.model.User;
 
-/**
- * @author kunrey
- *
- */
 public class BillDbMapper implements RowMapper {
 
 	public Object mapRow(ResultSet rs, int i) throws SQLException {

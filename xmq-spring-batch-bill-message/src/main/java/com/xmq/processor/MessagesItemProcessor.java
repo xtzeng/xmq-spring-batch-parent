@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.xmq.processor;
 
 import org.springframework.batch.item.ItemProcessor;

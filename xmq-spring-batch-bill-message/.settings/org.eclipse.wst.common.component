@@ -5,6 +5,7 @@
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/test/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/test/resouces"/>
         <property name="context-root" value="xmq-spring-batch-bill-message"/>
         <property name="java-output-path" value="/xmq-spring-batch-bill-message/target/classes"/>
     </wb-module>

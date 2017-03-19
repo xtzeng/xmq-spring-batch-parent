@@ -1,13 +1,6 @@
-/**
- * 
- */
 package com.xmq.model;
 
 
-/**
- * @author kunrey
- *
- */
 public class PayRecord {
 	private Long id;
 	private Bill bill;

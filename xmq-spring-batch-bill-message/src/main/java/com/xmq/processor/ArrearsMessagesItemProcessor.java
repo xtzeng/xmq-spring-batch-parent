@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.xmq.processor;
 
 import org.springframework.batch.item.ItemProcessor;
@@ -8,10 +5,6 @@ import org.springframework.batch.item.ItemProcessor;
 import com.xmq.model.Bill;
 import com.xmq.model.Message;
 
-/**
- * @author kunrey
- * 
- */
 public class ArrearsMessagesItemProcessor implements
 		ItemProcessor<Bill, Message> {
 
