@@ -180,5 +180,6 @@
     <module>xmq-spring-batch-database-reading-partition</module>
     <module>xmq-spring-batch-scheduling</module>
     <module>xmq-spring-batch-jdbc-paging</module>
+    <module>xmq-spring-batch-bill-message</module>
   </modules>
 </project>

@@ -1,0 +1,57 @@
+<beans:beans xmlns="http://www.springframework.org/schema/batch"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:beans="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/jdbc 
+	http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
+	http://www.springframework.org/schema/batch
+	http://www.springframework.org/schema/batch/spring-batch-2.2.xsd">
+	
+	<job id="messageJob" restartable="true">
+		<step id="messageStep">
+			<tasklet>
+				<chunk reader="messageReader" processor="messageProcessor" writer="messageWriter"
+					commit-interval="5" chunk-completion-policy="" retry-limit="2">
+					<retryable-exception-classes>
+						<include class="java.lang.RuntimeException" />
+					</retryable-exception-classes>
+				</chunk>
+			</tasklet>
+		</step>
+	</job>
+
+	<beans:bean id="jobRepository"
+		class="org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean">
+		<beans:property name="transactionManager" ref="transactionManager" />
+	</beans:bean>
+
+	<beans:bean id="transactionManager"
+		class="org.springframework.batch.support.transaction.ResourcelessTransactionManager" />
+
+	<beans:bean id="messageReader"
+		class="org.springframework.batch.item.file.FlatFileItemReader">
+		<beans:property name="lineMapper" ref="lineMapper">
+		</beans:property>
+		<beans:property name="resource" value="classpath:/users.txt"></beans:property>
+	</beans:bean>
+
+	<beans:bean id="lineMapper"
+		class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+		<beans:property name="lineTokenizer">
+			<beans:bean
+				class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer"></beans:bean>
+		</beans:property>
+		<beans:property name="fieldSetMapper">
+			<beans:bean class="com.xmq.mapper.UserMapper"></beans:bean>
+		</beans:property>
+	</beans:bean>
+
+	<beans:bean id="messageProcessor"
+		class="com.xmq.processor.MessagesItemProcessor"></beans:bean>
+
+	<beans:bean id="messageWriter"
+		class="com.xmq.writer.MessagesItemWriter"></beans:bean>
+
+</beans:beans>
