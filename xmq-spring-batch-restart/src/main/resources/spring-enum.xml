@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd">
+
+    <bean id="worker" class="com.xmq3.Worker">
+        <property name="name" value="lyx"/>
+        <property name="age" value="12"/>
+        <!-- 枚举类型的注入 -->
+        <property name="gender" value="MALE"/>
+    </bean>
+
+    <bean id="worker1" class="com.xmq3.Worker">
+        <property name="name" value="lyx"/>
+        <property name="age" value="12"/>
+        <!-- 枚举类型的注入 定义常量字段 -->
+        <property name="gender" ref="gender"/>
+    </bean>
+
+    <!-- 必须是全限定名 -->
+    <util:constant id="gender" static-field="com.xmq3.Gender.FEMALE"/>
+
+    <!-- 枚举作为key注入 -->
+    <util:map id="map" key-type="com.xmq3.Gender">
+        <entry key="FEMALE" value="110"/>
+        <entry key="MALE" value="111"/>
+        <entry key="UNSPECIFIED" value="112"/>
+    </util:map>
+</beans>

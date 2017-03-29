@@ -1,0 +1,127 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:batch="http://www.springframework.org/schema/batch"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+	<!-- 包的扫描 -->
+	<context:component-scan base-package="com.xmq" />
+
+	<bean id="exceptionHandler" class="com.xmq.ExceptionListener" />
+
+	<batch:step id="abstractStep" abstract="true">
+		<batch:listeners>
+			<batch:listener ref="exceptionHandler" />
+		</batch:listeners>
+	</batch:step>
+	<bean id="abstractCursorReader" abstract="true"
+		class="org.springframework.batch.item.database.JdbcCursorItemReader">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<bean id="taskExecutor" class="org.springframework.core.task.SimpleAsyncTaskExecutor" />
+	<!-- 并行的step -->
+	<batch:job id="addPeopleDescJob">
+		<batch:split id="split1" task-executor="taskExecutor">
+			<batch:flow>
+				<batch:step id="parallel_step_1">
+					<batch:tasklet>
+						<batch:chunk reader="peopleAddDescReader_db"
+							processor="addDescProcessor" writer="addDescPeopleWriter"
+							commit-interval="10" />
+					</batch:tasklet>
+				</batch:step>
+			</batch:flow>
+			<batch:flow>
+				<batch:step id="parallel_step_2">
+					<batch:tasklet>
+						<batch:chunk reader="peopleAddDescReader_file"
+							processor="addDescProcessor" writer="addDescPeopleWriter"
+							commit-interval="10" />
+					</batch:tasklet>
+				</batch:step>
+			</batch:flow>
+		</batch:split>
+	</batch:job>
+
+	<!-- 从数据库读取数据的reader -->
+	<bean id="peopleAddDescReader_db" parent="abstractCursorReader"
+		scope="step">
+		<property name="sql">
+			<value><![CDATA[select first_name ,last_name from people where 
+			first_name like ? or last_name like ?]]></value>
+		</property>
+		<property name="rowMapper" ref="peopleRowMapper" />
+		<property name="preparedStatementSetter" ref="preparedStatementSetter" />
+		<property name="fetchSize" value="20" />
+	</bean>
+	<bean id="peopleRowMapper" class="com.xmq.PeopleRowMapper" />
+	<bean id="preparedStatementSetter" class="com.xmq.PeoplePreparedStatementSetter" />
+	<bean id="addDescProcessor" class="com.xmq.AddPeopleDescProcessor" />
+	<bean id="addDescPeopleWriter" class="com.xmq.AddDescPeopleWriter" />
+
+	<!-- 从文件中读取数据的reader -->
+	<bean id="lineTokenizer"
+		class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+		<property name="delimiter" value="," />
+		<property name="names">
+			<list>
+				<value>firstName</value>
+				<value>lastName</value>
+			</list>
+		</property>
+	</bean>
+	<bean id="fieldSetMapper"
+		class="org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper">
+		<property name="prototypeBeanName" value="people" />
+	</bean>
+	<bean id="people" class="com.xmq.People" scope="prototype" />
+	<bean id="lineMapper"
+		class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+		<property name="lineTokenizer" ref="lineTokenizer" />
+		<property name="fieldSetMapper" ref="fieldSetMapper" />
+	</bean>
+	<bean id="resource" class="org.springframework.core.io.ClassPathResource">
+		<constructor-arg index="0" type="java.lang.String"
+			value="sample-data.csv" />
+	</bean>
+	<bean id="peopleAddDescReader_file" class="org.springframework.batch.item.file.FlatFileItemReader">
+		<property name="resource" ref="resource" />
+		<property name="encoding" value="utf-8" />
+		<property name="lineMapper" ref="lineMapper" />
+	</bean>
+	<!--从文件读取数据的reader end -->
+
+	<!--tomcat jdbc pool数据源配置 -->
+	<bean id="dataSource" class="org.apache.tomcat.jdbc.pool.DataSource"
+		destroy-method="close">
+		<property name="poolProperties">
+			<bean class="org.apache.tomcat.jdbc.pool.PoolProperties">
+				<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+				<property name="url" value="jdbc:mysql://localhost:3306/test" />
+				<property name="username" value="root" />
+				<property name="password" value="034039" />
+			</bean>
+		</property>
+	</bean>
+
+	<!-- spring batch 配置jobRepository -->
+	<batch:job-repository id="jobRepository"
+		data-source="dataSource" transaction-manager="transactionManager"
+		isolation-level-for-create="REPEATABLE_READ" table-prefix="BATCH_"
+		max-varchar-length="1000" />
+	<!-- spring的事务管理器 -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!-- batch luncher -->
+	<bean id="jobLauncher"
+		class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
+		<property name="jobRepository" ref="jobRepository" />
+	</bean>
+</beans>
+
+
+

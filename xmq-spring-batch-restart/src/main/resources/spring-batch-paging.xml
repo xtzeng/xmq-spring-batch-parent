@@ -1,0 +1,96 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:batch="http://www.springframework.org/schema/batch"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+	<!-- 包的扫描 -->
+	<context:component-scan base-package="com.xmq" />
+
+	<bean id="exceptionHandler" class="com.xmq.listener.ExceptionListener" />
+
+	<batch:step id="abstractStep" abstract="true">
+		<batch:listeners>
+			<batch:listener ref="exceptionHandler" />
+		</batch:listeners>
+	</batch:step>
+	<bean id="abstractJdbcPagingItemReader" abstract="true"
+		class="org.springframework.batch.item.database.JdbcPagingItemReader">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!-- <bean id="taskExecutor" class="org.springframework.core.task.SimpleAsyncTaskExecutor" 
+		/> -->
+	<!-- add people desc job begin -->
+	<batch:job id="addPeopleDescJob">
+		<batch:step id="addDescStep" parent="abstractStep">
+			<batch:tasklet>
+				<batch:chunk reader="peopleAddDescReader" processor="addDescProcessor"
+					writer="addDescPeopleWriter" commit-interval="2" />
+			</batch:tasklet>
+		</batch:step>
+	</batch:job>
+	<!-- add people desc job end -->
+
+	<!-- 使用分页的reader begin -->
+	<bean id="peopleAddDescReader" parent="abstractJdbcPagingItemReader"
+		scope="step">
+		<property name="queryProvider">
+			<bean
+				class="org.springframework.batch.item.database.support.SqlPagingQueryProviderFactoryBean">
+				<property name="dataSource" ref="dataSource" />
+				<property name="selectClause" value="select person_id, first_name, last_name" />
+				<property name="fromClause" value="from people" />
+				<property name="whereClause"
+					value="where ( first_name like :first_name or last_name like :last_name ) " />
+				<property name="sortKey" value="person_id" />
+			</bean>
+		</property>
+		<property name="parameterValues">
+			<map>
+				<entry key="first_name" value="#{jobParameters['first_name']}" />
+				<entry key="last_name" value="#{jobParameters['last_name']}" />
+			</map>
+		</property>
+		<!-- 在多线程环境中设置为false，否则为默认值true -->
+		<property name="saveState" value="true" />
+		<!-- 配置limit的大小 -->
+		<property name="pageSize" value="2" />
+		<property name="rowMapper" ref="peopleRowMapper" />
+	</bean>
+	<!-- 使用分页的reader end -->
+
+	<bean id="peopleRowMapper" class="com.xmq.mapper.PeopleRowMapper" />
+	<bean id="addDescProcessor" class="com.xmq.processor.AddPeopleDescProcessor" />
+	<bean id="addDescPeopleWriter" class="com.xmq.writer.AddDescPeopleWriter" />
+
+	<!--tomcat jdbc pool数据源配置 -->
+	<bean id="dataSource" class="org.apache.tomcat.jdbc.pool.DataSource"
+		destroy-method="close">
+		<property name="poolProperties">
+			<bean class="org.apache.tomcat.jdbc.pool.PoolProperties">
+				<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+				<property name="url" value="jdbc:mysql://localhost:3306/test" />
+				<property name="username" value="root" />
+				<property name="password" value="root" />
+			</bean>
+		</property>
+	</bean>
+
+	<!-- spring batch 配置jobRepository -->
+	<batch:job-repository id="jobRepository"
+		data-source="dataSource" transaction-manager="transactionManager"
+		isolation-level-for-create="REPEATABLE_READ" table-prefix="BATCH_"
+		max-varchar-length="1000" />
+	<!-- spring的事务管理器 -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!-- batch luncher -->
+	<bean id="jobLauncher"
+		class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
+		<property name="jobRepository" ref="jobRepository" />
+	</bean>
+</beans>

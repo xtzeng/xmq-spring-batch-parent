@@ -1,0 +1,87 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:batch="http://www.springframework.org/schema/batch"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd">
+
+	<bean id="lineTokenizer"
+		class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+		<property name="delimiter" value="," />
+		<property name="names">
+			<list>
+				<value>firstName</value>
+				<value>lastName</value>
+			</list>
+		</property>
+	</bean>
+	<bean id="fieldSetMapper"
+		class="org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper">
+		<property name="prototypeBeanName" value="person" />
+	</bean>
+	<bean id="person" class="com.xmq.Person" scope="prototype" />
+	<bean id="lineMapper"
+		class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+		<property name="lineTokenizer" ref="lineTokenizer" />
+		<property name="fieldSetMapper" ref="fieldSetMapper" />
+	</bean>
+	<bean id="resource" class="org.springframework.core.io.ClassPathResource">
+		<constructor-arg index="0" type="java.lang.String"
+			value="sample-data.csv" />
+	</bean>
+	<bean id="flatFileItemReader" class="org.springframework.batch.item.file.FlatFileItemReader">
+		<property name="resource" ref="resource" />
+		<property name="encoding" value="utf-8" />
+		<property name="lineMapper" ref="lineMapper" />
+	</bean>
+
+	<bean id="itemProcessor" class="com.xmq.PersonItemProcessor" />
+	<bean id="jdbcBatchItemWriter"
+		class="org.springframework.batch.item.database.JdbcBatchItemWriter">
+		<property name="itemSqlParameterSourceProvider" ref="itemSqlParameterSourceProvider" />
+		<property name="sql"
+			value="INSERT INTO people (first_name, last_name) VALUES (:firstName, :lastName)" />
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<bean id="itemSqlParameterSourceProvider"
+		class="org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider" />
+	<!--tomcat jdbc pool数据源配置 -->
+	<bean id="dataSource" class="org.apache.tomcat.jdbc.pool.DataSource"
+		destroy-method="close">
+		<property name="poolProperties">
+			<bean class="org.apache.tomcat.jdbc.pool.PoolProperties">
+				<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+				<property name="url" value="jdbc:mysql://localhost:3306/test" />
+				<property name="username" value="root" />
+				<property name="password" value="034039" />
+			</bean>
+		</property>
+	</bean>
+
+	<batch:job id="sampleJob" job-repository="jobRepository">
+		<batch:step id="step">
+			<tasklet transaction-manager="transactionManager">
+				<chunk reader="flatFileItemReader" processor="itemProcessor"
+					writer="jdbcBatchItemWriter" commit-interval="1" />
+			</tasklet>
+		</batch:step>
+	</batch:job>
+
+	<!-- spring batch 配置jobRepository -->
+	<batch:job-repository id="jobRepository"
+		data-source="dataSource" transaction-manager="transactionManager"
+		isolation-level-for-create="REPEATABLE_READ" table-prefix="BATCH_"
+		max-varchar-length="1000" />
+	<!-- spring的事务管理器 -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!-- batch luncher -->
+	<bean id="jobLauncher"
+		class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
+		<property name="jobRepository" ref="jobRepository" />
+	</bean>
+</beans>
+
+	

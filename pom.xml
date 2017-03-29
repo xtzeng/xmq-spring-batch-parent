@@ -181,5 +181,6 @@
     <module>xmq-spring-batch-scheduling</module>
     <module>xmq-spring-batch-jdbc-paging</module>
     <module>xmq-spring-batch-bill-message</module>
+    <module>xmq-spring-batch-restart</module>
   </modules>
 </project>
