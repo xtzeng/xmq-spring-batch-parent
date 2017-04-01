@@ -182,5 +182,6 @@
     <module>xmq-spring-batch-jdbc-paging</module>
     <module>xmq-spring-batch-bill-message</module>
     <module>xmq-spring-batch-restart</module>
+    <module>xmq-spring-logging-skipped-items</module>
   </modules>
 </project>

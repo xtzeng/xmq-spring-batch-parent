@@ -10,55 +10,52 @@
 		http://www.springframework.org/schema/batch 
 		http://www.springframework.org/schema/batch/spring-batch-2.2.xsd">
 
-	<batch:job id="jdbcPagingJob">
-		<batch:step id="jdbcPagingStep">
+	<batch:job id="loggingSkippedItemsJob">
+		<batch:step id="loggingSkippedItemsStep">
 			<batch:tasklet>
-				<batch:chunk reader="reader" writer="writer" commit-interval="10"/>
+				<batch:chunk reader="reader" writer="writer" commit-interval="3"
+					         skip-limit="10">
+					<batch:skippable-exception-classes>
+						<batch:include class="org.springframework.batch.item.file.FlatFileParseException"/>
+					</batch:skippable-exception-classes>
+				</batch:chunk>
+				<!-- TODO 04 register the listener with the batch:listeners and batch:listener tags -->
+				<batch:listeners>
+					<batch:listener ref="skipListener" />
+				</batch:listeners>
 			</batch:tasklet>
 		</batch:step>
 	</batch:job>
+
+	<!-- TODO 03 declare a Slf4jSkipListener bean, call it skipListener -->
+	<bean id="skipListener" class="com.xmq.Slf4jSkipListener" />
 	
-	<!-- TODO 03 configure a JdbcPagingItemReader to select all the records of the contact table -->
-	<!-- configure the dataSource, pageSize, queryProvider, and rowMapper properties -->
-	<!-- for the queryProvider, use a SqlPagingQueryProviderFactoryBean -->
-	
-	<bean id="reader" class="org.springframework.batch.item.database.JdbcPagingItemReader">
-		<property name="dataSource" ref="dataSource" />
-		<property name="pageSize" value="10" />
-		<property name="queryProvider">
-			<bean class="org.springframework.batch.item.database.support.SqlPagingQueryProviderFactoryBean">
-				<property name="dataSource" ref="dataSource" />
-				<property name="selectClause" value="select id,firstname,lastname,birth" />
-				<property name="fromClause" value="from contact" />
-				<property name="sortKey" value="id" />
-			</bean>
-		</property>
-		<property name="rowMapper">
-			<bean class="com.xmq.ContactRowMapper" />
-		</property>
-	</bean>
-	
-	  <jdbc:initialize-database data-source="dataSource">
-		<jdbc:script location="classpath:/create-tables.sql" />
-		<jdbc:script location="classpath:/insert-data.sql" />
-	  </jdbc:initialize-database>
-	
-	<bean id="writer" class="org.springframework.batch.item.file.FlatFileItemWriter" scope="step">
-		<property name="resource" value="#{jobParameters['output.file']}" />
-		<property name="lineAggregator">
-			<bean class="org.springframework.batch.item.file.transform.DelimitedLineAggregator">
-				<property name="delimiter" value="," />
-				<property name="fieldExtractor">
-					<bean class="org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor">
-						<property name="names" value="id,firstname,lastname,birth" />
+	<bean id="reader" class="org.springframework.batch.item.file.FlatFileItemReader">
+		<property name="lineMapper">
+			<bean class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+				<property name="lineTokenizer">
+					<bean class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+						<property name="names" value="firstname,lastname,birth" />
 					</bean>
+				</property>
+				<property name="fieldSetMapper">
+					<bean class="com.xmq.ContactFieldSetMapper" />
 				</property>
 			</bean>
 		</property>
-		<property name="shouldDeleteIfExists" value="true" />
+		<property name="resource" value="classpath:contacts.txt" />
+	</bean>
+	
+	<bean id="writer" class="com.xmq.JdbcContactItemWriter">
+		<constructor-arg ref="dataSource" />
 	</bean>
 
-	 <bean id="propertyConfigure"  class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"> 
+  		<jdbc:initialize-database data-source="dataSource">
+			<jdbc:script location="classpath:/create-tables.sql" />
+	  	</jdbc:initialize-database>
+
+	
+	<bean id="propertyConfigure"  class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"> 
  	 	<property name="locations"> 
 		   <list> 
 		    <value>./jdbc.properties</value> 
@@ -113,6 +110,7 @@
 	 <bean id="logFilter" class="com.alibaba.druid.filter.logging.Slf4jLogFilter"> 
 	  <property name="statementExecutableSqlLogEnable" value="false" /> 
 	 </bean>
+
 
 	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
 		<property name="dataSource" ref="dataSource" />
