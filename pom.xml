@@ -183,5 +183,6 @@
     <module>xmq-spring-batch-bill-message</module>
     <module>xmq-spring-batch-restart</module>
     <module>xmq-spring-logging-skipped-items</module>
+    <module>xmq-spring-batch-processor</module>
   </modules>
 </project>
